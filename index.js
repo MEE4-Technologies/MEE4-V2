@@ -1,11 +1,6 @@
 const fs = require("node:fs");
 const path = require("node:path");
-const {
-  Client,
-  Collection,
-  GatewayIntentBits,
-  ActivityType,
-} = require("discord.js");
+const { Client, Collection, GatewayIntentBits, ActivityType, Events } = require("discord.js");
 const { token } = require("./config.json");
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
@@ -62,5 +57,15 @@ for (const file of eventFiles) {
     client.on(event.name, (...args) => event.execute(...args));
   }
 }
+
+const { QuickDB } = require("quick.db");
+const db = new QuickDB();
+client.on(Events.GuildMemberAdd, async (member) => {
+  const channelId = await db.get(`welcomechannel_${member.guild.id}`);
+  const channel = member.guild.channels.cache.get(channelId);
+  const message = `Welcome to **${message.guild.name}**, ${member}! We hope you enjoy your stay!`;
+  if (channelId === null) return;
+  channel.send(message);
+});
 
 client.login(token);
